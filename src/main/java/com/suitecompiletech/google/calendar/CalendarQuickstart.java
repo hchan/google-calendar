@@ -39,6 +39,11 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+/**
+ * 
+ * @author Henry
+ *
+ */
 
 public class CalendarQuickstart {
 	private static final String APPLICATION_NAME = "Google Calendar API Java Quickstart";
