@@ -81,7 +81,15 @@ public class CalendarQuickstart {
 		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 	}
 
+	
 	public static void main(String... args) throws IOException, GeneralSecurityException, ParseException {
+		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+		Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+				.setApplicationName(APPLICATION_NAME).build();
+		listEvents(service);
+	}
+	
+	public static void main2(String... args) throws IOException, GeneralSecurityException, ParseException {
 		// Build a new authorized API client service.
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 		Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
