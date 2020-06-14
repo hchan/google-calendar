@@ -86,14 +86,26 @@ public class CalendarQuickstart {
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 		Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
 				.setApplicationName(APPLICATION_NAME).build();
-		listEvents(service);
+		 ChronoFormatter<ChineseCalendar> f =
+			        ChronoFormatter.ofPattern(
+			          "d/M/U(r)", 
+			          PatternType.CLDR, 
+			          Locale.ROOT, 
+			          ChineseCalendar.axis());
+		// programmed with help from Jess
+		for (int year = 2020; year <= 2050; year++) {
+			PlainDate gregorian = f.parse("18/5/ji-hai(" + year + ")").transform(PlainDate.axis());	
+			 DateTime dateTime = new DateTime(gregorian.toString() + "T09:00:00-07:00");
+			 createEvents(service, dateTime, dateTime);
+			 System.out.println(dateTime);
+		}
 	}
 	
-	public static void main2(String... args) throws IOException, GeneralSecurityException, ParseException {
+	public static void mainGregToLunar(String... args) throws IOException, GeneralSecurityException, ParseException {
 		// Build a new authorized API client service.
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-		Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-				.setApplicationName(APPLICATION_NAME).build();
+		//Calendar service = new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+			//	.setApplicationName(APPLICATION_NAME).build();
 		 ChronoFormatter<ChineseCalendar> f =
 			        ChronoFormatter.ofPattern(
 			          "d/M/U(r)", 
@@ -103,9 +115,16 @@ public class CalendarQuickstart {
 		 // see https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/2020e.pdf
 		 // see https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/2021e.pdf
 		 // etc https://www.hko.gov.hk/en/gts/time/calendar/pdf/files/{YEAR}e.pdf
-		 for (int year = 2020; year < 2050; year++) {
-			 PlainDate gregorian = f.parse("18/5/ji-hai(" + year + ")").transform(PlainDate.axis());
-			 System.out.println(gregorian); 
+
+		 
+	
+		for (int year = 2020; year <= 2050; year++) {
+			PlainDate gregorian = f.parse("18/5/ji-hai(" + year + ")").transform(PlainDate.axis());	
+			 DateTime dateTime = new DateTime(gregorian.toString() + "T09:00:00-07:00");
+			 System.out.println(dateTime);
+			
+			//PlainDate gregorian = f.parse("18/5/ji-hai(" + year + ")").transform(PlainDate.axis());
+			 //System.out.println(gregorian); 
 			 /*
 			  * 2020-07-08
 2021-06-27
@@ -145,26 +164,27 @@ public class CalendarQuickstart {
 		// listEvents(service);
 	}
 
-	private static void createEvents(Calendar service) throws IOException {
-		Event event = new Event().setSummary("Test").setLocation("virtual")
-				.setDescription("mum's bday");
+	private static void createEvents(Calendar service, DateTime startDateTime, DateTime endDateTime) throws IOException {
+		Event event = new Event().setSummary("Mum's bday").setLocation("166 w 45th Ave")
+				.setDescription("remember to bring food");
 
-		DateTime startDateTime = new DateTime("2020-06-01T00:00:00-07:00");
 		EventDateTime start = new EventDateTime().setDateTime(startDateTime).setTimeZone("America/Vancouver");
 		event.setStart(start);
 
-		DateTime endDateTime = new DateTime("2020-06-01T10:00:01-07:00");
 		EventDateTime end = new EventDateTime().setDateTime(endDateTime).setTimeZone("America/Vancouver");
 		event.setEnd(end);
 
 		//String[] recurrence = new String[] { "RRULE:FREQ=DAILY;COUNT=2" };
 		//event.setRecurrence(Arrays.asList(recurrence));
 
-		EventAttendee[] attendees = new EventAttendee[] { new EventAttendee().setEmail("q8e192@gmail.com") };
+		EventAttendee[] attendees = new EventAttendee[] { 
+				new EventAttendee().setEmail("q8e192@gmail.com"),
+				new EventAttendee().setEmail("jessica.heung@gmail.com")
+		};
 		event.setAttendees(Arrays.asList(attendees));
 
 		EventReminder[] reminderOverrides = new EventReminder[] {
-				new EventReminder().setMethod("email").setMinutes(24 * 60 * 7),
+				new EventReminder().setMethod("email").setMinutes(60 * 24 * 7),
 				new EventReminder().setMethod("popup").setMinutes(10), };
 		Event.Reminders reminders = new Event.Reminders().setUseDefault(false)
 				.setOverrides(Arrays.asList(reminderOverrides));
@@ -178,7 +198,7 @@ public class CalendarQuickstart {
 	private static void listEvents(Calendar service) throws IOException {
 		// List the next 10 events from the primary calendar.
 		DateTime now = new DateTime(System.currentTimeMillis());
-		Events events = service.events().list("primary").setMaxResults(10).setTimeMin(now).setOrderBy("startTime")
+		Events events = service.events().list("primary").setMaxResults(100).setTimeMin(now).setOrderBy("startTime")
 				.setSingleEvents(true).execute();
 		List<Event> items = events.getItems();
 		if (items.isEmpty()) {
